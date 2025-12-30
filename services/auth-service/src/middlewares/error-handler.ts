@@ -3,21 +3,36 @@ import { HttpError } from '@chatapp/common'
 import { logger } from '@/utils/logger'
 
 export const errorHandler: ErrorRequestHandler = (
-  err: any,
+  error: Error,
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  logger.error({ err }, 'unhandled error occurred')
-  const error = err instanceof HttpError ? err : undefined
-  const statusCode = error?.statusCode ?? 500
-  const message =
-    statusCode >= 500
-      ? 'Internal server error'
-      : (error?.message ?? 'unknown error')
-  const payload = error?.details
-    ? { message, details: error.details }
-    : { message }
-  res.status(statusCode).json({ success: false, ...payload })
-  void next
+  if (error instanceof HttpError) {
+    const statusCode = error.statusCode || 500
+    return res.status(statusCode).json(error.serialize())
+  }
+  logger.error(
+    {
+      message: error?.message ?? String(error),
+      name: error?.name,
+      stack: error?.stack,
+      method: req.method,
+      url: req.originalUrl || req.url,
+      body: req.body,
+      params: req.params,
+      query: req.query,
+      statusCode: 500
+    },
+    'Unhandled_Error'
+  )
+  const isProduction = process.env.NODE_ENV === 'production'
+  res.status(500).json({
+    success: false,
+    statusCode: 500,
+    errorCode: 'Unhandled_Error',
+    message: isProduction ? 'SOMETHING WENT WRONG' : error.message,
+    timeStamp: new Date().toISOString(),
+    ...(!isProduction && { stack: error.stack })
+  })
 }

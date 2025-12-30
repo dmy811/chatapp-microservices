@@ -7,7 +7,13 @@ const envSchema = z.object({
     .enum(['development', 'production', 'text'])
     .default('development'),
   AUTH_SERVICE_PORT: z.coerce.number().int().min(0).max(65_536).default(4003),
-  AUTH_DB_URL: z.string()
+  AUTH_DB_URL: z.string(),
+  JWT_ACCESS_TOKEN_PRIVATE_KEY: z.string(),
+  JWT_ACCESS_TOKEN_PUBLIC_KEY: z.string(),
+  JWT_REFRESH_TOKEN_PRIVATE_KEY: z.string(),
+  JWT_REFRESH_TOKEN_PUBLIC_KEY: z.string(),
+  JWT_ACCESS_TOKEN_EXPIRES_IN: z.string().default('1d'),
+  JWT_REFRESH_TOKEN_EXPIRES_IN: z.string().default('30d')
 })
 
 type EnvType = z.infer<typeof envSchema>

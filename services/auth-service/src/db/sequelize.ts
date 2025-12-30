@@ -18,7 +18,7 @@ export const sequelize = new Sequelize(env.AUTH_DB_URL, {
 
 export const connectToDatabase = async () => {
   await sequelize.authenticate()
-  logger.info('auth database connection established succesfully')
+  logger.info('mysql auth database connection established succesfully')
 }
 
 export const closeDatabase = async () => {

@@ -1,14 +1,24 @@
 {
-  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "composite": true
+    "composite": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "sourceMap": true,
+    "outDir": "dist",
+    "types": ["node"]
   },
   "files": [],
   "references": [
     { "path": "./packages/common" },
-    { "path": "./services/auth-service" },
-    { "path": "./services/user-service" },
-    { "path": "./services/chat-service" },
-    { "path": "./services/gateway-service" }
-  ]
+    { "path": "./services/auth-service" }
+  ],
+  "exclude": ["node_modules", "dist"]
 }

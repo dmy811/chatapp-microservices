@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import { ZodError, ZodType } from 'zod'
 
-import { HttpError } from '../errors/http-error'
+import { BadRequestError } from '../errors/http-error'
 
 type Schema = ZodType
 type ParamsRecord = Record<string, string>
@@ -13,12 +13,13 @@ export interface RequestValidationSchemas {
   query?: Schema
 }
 
-const formatedError = (error: ZodError) => {
+const formatedError = (error: ZodError) =>
   error.issues.map((issue) => ({
     path: issue.path.join('.'),
-    message: issue.message
+    message: issue.message,
+    input: issue.input,
+    code: issue.code
   }))
-}
 
 export const validateRequest = (schemas: RequestValidationSchemas) => {
   return (req: Request, _res: Response, next: NextFunction) => {
@@ -38,9 +39,10 @@ export const validateRequest = (schemas: RequestValidationSchemas) => {
       next()
     } catch (error) {
       if (error instanceof ZodError) {
+        const messages: string = error.issues.map((e) => e.message).join(', ')
         return next(
-          new HttpError(422, 'validation error', {
-            issues: formatedError(error)
+          new BadRequestError(messages, {
+            details: formatedError(error)
           })
         )
       }

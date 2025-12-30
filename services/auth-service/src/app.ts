@@ -14,6 +14,7 @@ export const createApp = (): Application => {
   app.use(helmet())
   app.use(express.json())
   app.use(express.urlencoded({ extended: true }))
+  // app.set('trust proxy', true) // aktifkan jika pakai proxy seperti nginx dan lain lain utk production agar dapat mendapatkan req.ip
 
   app.get('/', (req, res) => {
     res.send('hehehehe')
