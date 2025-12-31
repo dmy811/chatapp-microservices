@@ -1,35 +1,17 @@
-import { createApp } from '@/app'
-import { createServer } from 'node:http'
+import express from 'express'
+import { App } from '@/app'
 import { env } from './config/env'
 import { logger } from './utils/logger'
-import { closeDatabase, connectToDatabase } from './db/sequelize'
-import { initModels } from './models'
+import { Routes } from './routes/auth.routes'
 
 const main = async () => {
   try {
-    await connectToDatabase()
-    await initModels() // for development
-    const app = createApp()
-    const server = createServer(app)
-    const port = env.AUTH_SERVICE_PORT
-    server.listen(port, () => {
-      logger.info({ port }, 'auth service is running')
-    })
-
-    const shutdown = () => {
-      logger.info('shutting down auth service')
-      Promise.all([closeDatabase()])
-        .catch((error: unknown) => {
-          logger.error({ error }, 'error during shutdown auth service')
-        })
-        .finally(() => {
-          server.close(() => process.exit(0))
-        })
-    }
-    process.on('SIGINT', shutdown)
-    process.on('SIGTERM', shutdown)
+    const router = express.Router()
+    const userRoutes = new Routes(router)
+    const app = new App(env, userRoutes.routes)
+    await app.startServer()
   } catch (error) {
-    logger.error({ error }, 'failed to start auth services')
+    logger.error({ error }, 'from index.ts failed to start auth services')
     process.exit(1)
   }
 }
