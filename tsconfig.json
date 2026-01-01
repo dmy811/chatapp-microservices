@@ -18,7 +18,8 @@
   "files": [],
   "references": [
     { "path": "./packages/common" },
-    { "path": "./services/auth-service" }
+    { "path": "./services/auth-service" },
+    { "path": "./services/gateway-service" }
   ],
   "exclude": ["node_modules", "dist"]
 }

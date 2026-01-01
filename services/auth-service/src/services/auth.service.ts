@@ -1,6 +1,6 @@
 import { Op } from 'sequelize'
 import { UserCredentials } from '@/models'
-import { LoginInput, RegisterInput } from '@/types/auth'
+import { LoginInput, RegisterInput, UserData } from '@/types/auth'
 import { BadRequestError, ConflictError } from '@chatapp/common'
 import { sequelize } from '@/db/sequelize'
 import { hashPassword } from '@/utils/token'
@@ -8,7 +8,7 @@ import { hashPassword } from '@/utils/token'
 export class AuthService {
   constructor(private readonly model: typeof UserCredentials) {}
 
-  public async register(input: RegisterInput): Promise<UserCredentials> {
+  public async register(input: RegisterInput): Promise<UserData> {
     const existing = await this.model.findOne({
       where: { email: input.email }
     })
@@ -23,14 +23,14 @@ export class AuthService {
       displayName: input.displayName,
       passwordHash
     })
-    const userData = {
+    const userData: UserData = {
       id: user.id,
       email: user.email,
-      displayname: user.displayName,
+      displayName: user.displayName,
       createdAt: user.createdAt.toISOString()
     }
     // publish event UserRegistered
-    return user
+    return userData
   }
 
   public async login(input: LoginInput) {}

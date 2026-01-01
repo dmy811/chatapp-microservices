@@ -27,4 +27,10 @@ export class AuthSchema {
       })
     })
   })
+
+  static refreshSchema = z.object({
+    body: z.object({
+      refreshToken: z.string()
+    })
+  })
 }

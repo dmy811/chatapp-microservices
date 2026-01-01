@@ -1,26 +1,44 @@
-import pino from 'pino'
-import type { Logger, LoggerOptions } from 'pino'
+import winston, { format, transports, Logger } from 'winston'
 
-type CreateLoggerOptions = LoggerOptions & {
-  name: string
-}
+const NODE_ENV = process.env.NODE_ENV ?? 'development'
+const defaultLevel =
+  NODE_ENV === 'development'
+    ? 'debug'
+    : NODE_ENV === 'production'
+      ? 'info'
+      : 'debug'
 
-export const createLogger = (options: CreateLoggerOptions): Logger => {
-  const { name, ...rest } = options
-  const transport =
-    process.env.NODE_ENV === 'development'
-      ? {
-          target: 'pino-pretty',
-          options: {
-            colorize: true,
-            translateTime: 'SYS:standard'
-          }
-        }
-      : undefined
-  return pino({
-    name,
-    level: process.env.LOG_LEVEL || 'info',
-    transport,
-    ...rest
+const jsonFormat = format((info) => {
+  const { from, level, message, timestamp, ...meta } = info
+
+  const logObj: Record<string, any> = {
+    from,
+    message,
+    level,
+    timestamp,
+    ...meta
+  }
+
+  info[Symbol.for('message')] = JSON.stringify(logObj, null, 2)
+  return info
+})
+
+const consoleFormat = format.combine(
+  format.errors({ stack: true }),
+  format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+  jsonFormat(),
+  format.colorize({ message: true })
+)
+
+export const createLogger = (service: string): Logger => {
+  return winston.createLogger({
+    level: defaultLevel,
+    defaultMeta: { service: service },
+    transports: [
+      new transports.Console({
+        format: consoleFormat
+      })
+    ],
+    exitOnError: false
   })
 }

@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "build": "pnpm -r --workspace-root=false run build",
+    "start": "pnpm -r --workspace-root=false run start",
     "dev": "pnpm -r --workspace-root=false run dev",
     "lint": "pnpm -r --workspace-root=false run lint",
     "format": "pnpm -r --workspace-root=false run format",

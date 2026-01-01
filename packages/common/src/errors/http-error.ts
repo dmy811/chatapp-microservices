@@ -1,10 +1,19 @@
+export interface ServiceErrorRespose {
+  success: false
+  statusCode: number
+  message: string
+  errorCode: string
+  details?: unknown
+  timestamp: string
+}
+
 export class HttpError extends Error {
   public readonly timestamp: string = new Date().toISOString()
   public readonly isOperational = true
   constructor(
     public readonly statusCode: number,
     message: string,
-    public readonly code?: string,
+    public readonly errorCode?: string,
     public readonly details?: Record<string, unknown>
   ) {
     super(message)
@@ -18,7 +27,7 @@ export class HttpError extends Error {
       success: false,
       statusCode: this.statusCode,
       message: this.message,
-      code: this.code,
+      errorCode: this.errorCode,
       details: this.details,
       timestamp: this.timestamp
     }
@@ -29,9 +38,9 @@ export class BadRequestError extends HttpError {
   constructor(
     message: string,
     details?: Record<string, unknown>,
-    code = 'BAD_REQUEST'
+    errorCode = 'BAD_REQUEST'
   ) {
-    super(400, message, code, details)
+    super(400, message, errorCode, details)
   }
 }
 
@@ -39,9 +48,9 @@ export class ConflictError extends HttpError {
   constructor(
     message: string,
     details?: Record<string, unknown>,
-    code = 'CONFLICT'
+    errorCode = 'CONFLICT'
   ) {
-    super(409, message, code, details)
+    super(409, message, errorCode, details)
   }
 }
 
@@ -49,9 +58,9 @@ export class ForbiddenError extends HttpError {
   constructor(
     message: string,
     details?: Record<string, unknown>,
-    code = 'FORBIDDEN'
+    errorCode = 'FORBIDDEN'
   ) {
-    super(403, message, code, details)
+    super(403, message, errorCode, details)
   }
 }
 
@@ -59,9 +68,9 @@ export class InternalServerError extends HttpError {
   constructor(
     message: string,
     details?: Record<string, unknown>,
-    code = 'INTERNAL_SERVER_ERROR'
+    errorCode = 'INTERNAL_SERVER_ERROR'
   ) {
-    super(500, message, code, details)
+    super(500, message, errorCode, details)
   }
 }
 
@@ -69,9 +78,9 @@ export class NotFoundError extends HttpError {
   constructor(
     message: string,
     details?: Record<string, unknown>,
-    code = 'NOT_FOUND'
+    errorCode = 'NOT_FOUND'
   ) {
-    super(404, message, code, details)
+    super(404, message, errorCode, details)
   }
 }
 
@@ -79,8 +88,8 @@ export class UnauthorizedError extends HttpError {
   constructor(
     message: string,
     details?: Record<string, unknown>,
-    code = 'UNAUTHORIZED'
+    errorCode = 'UNAUTHORIZED'
   ) {
-    super(401, message, code, details)
+    super(401, message, errorCode, details)
   }
 }

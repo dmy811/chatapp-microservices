@@ -2,10 +2,8 @@ import express, { Request, Response, Router, type Application } from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import { errorHandler } from '@/middlewares/error-handler'
-import { closeDatabase, connectToDatabase, sequelize } from './db/sequelize'
 import { logger } from './utils/logger'
 import { Env } from './config/env'
-import { createInternalAuthMiddleware } from '@chatapp/common'
 
 export class App {
   private app: Application
@@ -31,7 +29,6 @@ export class App {
     this.app.use(helmet())
     this.app.use(express.json())
     this.app.use(express.urlencoded({ extended: true }))
-    this.app.use(createInternalAuthMiddleware(this.env.INTERNAL_AUTH_TOKEN))
   }
 
   private initializeRoutes(): void {
@@ -44,33 +41,23 @@ export class App {
 
   private initializeHealthCheck(): void {
     this.app.get('/health', (_req: Request, res: Response) => {
-      res.status(200).json({ message: 'AUTH SERVICE SERVER OK' })
-    })
-
-    this.app.get('/health/db', async (_req: Request, res: Response) => {
-      try {
-        await sequelize.query('SELECT 1')
-        res.status(200).json({ message: 'AUTH MYSQL DATABASE OK' })
-      } catch (error) {
-        logger.error(error)
-        res.status(500).json({ message: 'AUTH MYSQL DATABASE Uunhealthy' })
-      }
+      res.status(200).json({ message: 'GATEWAY SERVICE SERVER OK' })
     })
   }
 
   public async startServer(): Promise<void> {
     try {
-      await connectToDatabase()
-      this.server = this.app.listen(this.env.AUTH_SERVICE_PORT, () => {
+      this.server = this.app.listen(this.env.GATEWAY_PORT, () => {
         logger.info(
-          `auth service is running on port ${this.env.AUTH_SERVICE_PORT}`
+          `gateway service is running on port ${this.env.GATEWAY_PORT}`
         )
+        logger.info(`auth service is running at ${this.env.AUTH_SERVICE_URL}`)
       })
       this.setupGracefulShutdown()
     } catch (error) {
       logger.error({
         from: 'app.ts',
-        message: 'auth service failed to start server'
+        message: 'gateway service failed to start server'
       })
       process.exit(1)
     }
@@ -90,12 +77,11 @@ export class App {
           })
         }
 
-        await closeDatabase()
-        logger.info('auth server shutdown gracefully')
+        logger.info('gateway server shutdown gracefully')
       } catch (error) {
         logger.error({
           from: 'app.ts',
-          message: 'failed to shutdown the auth server'
+          message: 'failed to shutdown the sgateway erver'
         })
       }
     }
