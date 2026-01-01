@@ -1,6 +1,6 @@
 import { Op } from 'sequelize'
 import { UserCredentials } from '@/models'
-import { LoginInput, RegisterInput, UserData } from '@/types/auth'
+import { LoginInput, RegisterInput, UserData } from '@/types/user'
 import { BadRequestError, ConflictError } from '@chatapp/common'
 import { sequelize } from '@/db/sequelize'
 import { hashPassword } from '@/utils/token'

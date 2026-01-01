@@ -1,6 +1,5 @@
 import { sequelize } from '@/db/sequelize'
-import { UserCredentials } from './user-credentials.model'
-import { RefreshTokens } from './refresh-token.model'
+import { Users } from './user.model'
 
 export const initModels = async () => {
   await sequelize.sync()
@@ -10,4 +9,4 @@ export const initModels = async () => {
   // digunakan untuk menyamakan model dengan database secara otomatis, biasanya hanya dipakai di development.
 }
 
-export { UserCredentials, RefreshTokens }
+export { Users }

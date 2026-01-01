@@ -7,10 +7,6 @@ import { logger } from './utils/logger'
 import { Env } from './config/env'
 import { createInternalAuthMiddleware } from '@chatapp/common'
 import { initModels } from './models'
-import {
-  closeRabbitAndPublisher,
-  connectToRabbitAndInitPublisher
-} from './messaging/event-publishing'
 
 export class App {
   private app: Application
@@ -36,11 +32,15 @@ export class App {
     this.app.use(helmet())
     this.app.use(express.json())
     this.app.use(express.urlencoded({ extended: true }))
-    this.app.use(createInternalAuthMiddleware(this.env.INTERNAL_API_TOKEN))
+    this.app.use(
+      createInternalAuthMiddleware(this.env.INTERNAL_API_TOKEN, {
+        exemptPaths: ['/health']
+      })
+    )
   }
 
   private initializeRoutes(): void {
-    this.app.use('/auth', this.routes)
+    this.app.use('/users', this.routes)
   }
 
   private initializeErrorHandling(): void {
@@ -49,16 +49,16 @@ export class App {
 
   private initializeHealthCheck(): void {
     this.app.get('/health', (_req: Request, res: Response) => {
-      res.status(200).json({ message: 'AUTH SERVICE SERVER OK' })
+      res.status(200).json({ message: 'USER SERVICE SERVER OK' })
     })
 
     this.app.get('/health/db', async (_req: Request, res: Response) => {
       try {
         await sequelize.query('SELECT 1')
-        res.status(200).json({ message: 'AUTH MYSQL DATABASE OK' })
+        res.status(200).json({ message: 'USER POSTGRESQL DATABASE OK' })
       } catch (error) {
         logger.error(error)
-        res.status(500).json({ message: 'AUTH MYSQL DATABASE Uunhealthy' })
+        res.status(500).json({ message: 'USER POSTGRESQL DATABASE Unhealthy' })
       }
     })
   }
@@ -66,18 +66,17 @@ export class App {
   public async startServer(): Promise<void> {
     try {
       await connectToDatabase()
-      await initModels() // development purposes
-      await connectToRabbitAndInitPublisher()
-      this.server = this.app.listen(this.env.AUTH_SERVICE_PORT, () => {
+      // await initModels() // development purposes
+      this.server = this.app.listen(this.env.USER_SERVICE_PORT, () => {
         logger.info(
-          `auth service is running on port ${this.env.AUTH_SERVICE_PORT}`
+          `user service is running on port ${this.env.USER_SERVICE_PORT}`
         )
       })
       this.setupGracefulShutdown()
     } catch (error) {
       logger.error({
         from: 'app.ts',
-        message: 'auth service failed to start server'
+        message: 'user service failed to start server'
       })
       process.exit(1)
     }
@@ -98,12 +97,11 @@ export class App {
         }
 
         await closeDatabase()
-        await closeRabbitAndPublisher()
-        logger.info('auth server shutdown gracefully')
+        logger.info('user server shutdown gracefully')
       } catch (error) {
         logger.error({
           from: 'app.ts',
-          message: 'failed to shutdown the auth server'
+          message: 'failed to shutdown the user server'
         })
       }
     }

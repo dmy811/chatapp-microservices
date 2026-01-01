@@ -21,7 +21,7 @@ export type RefreshTokenCreationAttributes = Optional<
 // extends Model<TModelAttributes = any, TCreationAttributes = TModelAttributes>
 // TModelAttrbutes artinya bentuk data setelah ada di DB
 // TCreationAttributes artinya bentuk data saat create
-export class RefreshToken
+export class RefreshTokens
   extends Model<RefreshTokenAttributes, RefreshTokenCreationAttributes>
   implements RefreshTokenAttributes
 {
@@ -34,7 +34,7 @@ export class RefreshToken
   declare ipAddress: string | null
 }
 
-RefreshToken.init(
+RefreshTokens.init(
   {
     id: {
       type: DataTypes.UUID,
@@ -88,13 +88,13 @@ RefreshToken.init(
   }
 )
 
-UserCredentials.hasMany(RefreshToken, {
+UserCredentials.hasMany(RefreshTokens, {
   foreignKey: 'userId',
   as: 'refreshTokens',
   onDelete: 'CASCADE'
 })
 
-RefreshToken.belongsTo(UserCredentials, {
+RefreshTokens.belongsTo(UserCredentials, {
   foreignKey: 'userId',
   as: 'user'
 })

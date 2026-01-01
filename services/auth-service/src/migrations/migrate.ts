@@ -1,6 +1,5 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { logger } from '@/utils/logger'
 import { createConnection, Connection } from 'mysql2/promise'
 
 export class Migrate {
@@ -33,34 +32,31 @@ export class Migrate {
 
   async startMigratingDatabase(): Promise<void> {
     const conn = this.getConnection()
-    try {
-      await conn.query(`CREATE DATABASE IF NOT EXISTS \`${this.dbName}\``)
-      await conn.query(`USE \`${this.dbName}\``)
-      logger.info(`✅ Database '${this.dbName}' created and used`)
+    await conn.query(`CREATE DATABASE IF NOT EXISTS \`${this.dbName}\``)
+    await conn.query(`USE \`${this.dbName}\``)
+
+    const files = fs
+      .readdirSync(path.join(__dirname, 'tables'))
+      .filter((file) => file.endsWith('.sql'))
+      .sort()
+
+    for (const file of files) {
       await conn.beginTransaction()
-      await conn.query(
-        fs.readFileSync(
-          path.join(__dirname, 'tables', 'user_credentials.sql'),
-          'utf8'
+      try {
+        await conn.query(
+          fs.readFileSync(path.join(__dirname, 'tables', file), 'utf8')
         )
-      )
-      await conn.query(
-        fs.readFileSync(
-          path.join(__dirname, 'tables', 'refresh_tokens.sql'),
-          'utf-8'
-        )
-      )
-      await conn.commit()
-      logger.info(
-        'user_credentials and refresh_tokens table successfully created'
-      )
-    } catch (error) {
-      await conn.rollback()
-      throw error
+        await conn.commit()
+      } catch (error) {
+        await conn.rollback()
+        throw error
+      }
     }
   }
 
   async closeMysqlConnection(): Promise<void> {
-    await this.connection.end()
+    if (this.connection) {
+      await this.connection.end()
+    }
   }
 }

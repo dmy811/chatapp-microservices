@@ -2,9 +2,9 @@ import { Sequelize } from 'sequelize'
 import { env } from '@/config/env'
 import { logger } from '@/utils/logger'
 
-const AUTH_DB_URL = `mysql://${env.AUTH_DB_USER}:${env.AUTH_DB_PASSWORD}@${env.AUTH_DB_HOST}:${env.AUTH_DB_PORT}/${env.AUTH_DB_NAME}`
+const AUTH_DB_URL = `postgresql://${env.USER_DB_USER}:${env.USER_DB_PASSWORD}@${env.USER_DB_HOST}:${env.USER_DB_PORT}/${env.USER_DB_NAME}`
 export const sequelize = new Sequelize(AUTH_DB_URL, {
-  dialect: 'mysql',
+  dialect: 'postgres',
   logging:
     env.NODE_ENV === 'development'
       ? (msg: unknown) => {
@@ -20,10 +20,10 @@ export const sequelize = new Sequelize(AUTH_DB_URL, {
 
 export const connectToDatabase = async () => {
   await sequelize.authenticate()
-  logger.info('mysql auth database connection established succesfully')
+  logger.info('postgresql user database connection established succesfully')
 }
 
 export const closeDatabase = async () => {
   await sequelize.close()
-  logger.info('mysql auth database connection closed')
+  logger.info('postgresql user database connection closed')
 }
