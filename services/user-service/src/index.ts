@@ -13,7 +13,8 @@ const main = async () => {
   } catch (error) {
     logger.error({
       from: 'index.ts',
-      message: 'from index.ts failed to start user services'
+      message: 'from index.ts failed to start user services',
+      error: (error as any).message
     })
     console.error(error)
     process.exit(1)

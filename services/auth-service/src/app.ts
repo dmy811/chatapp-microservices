@@ -82,7 +82,8 @@ export class App {
     } catch (error) {
       logger.error({
         from: 'app.ts',
-        message: 'auth service failed to start server'
+        message: 'auth service failed to start server',
+        error: (error as any).message
       })
       process.exit(1)
     }
@@ -117,7 +118,8 @@ export class App {
       } catch (error) {
         logger.error({
           from: 'app.ts',
-          message: 'failed to shutdown the auth server'
+          message: 'failed to shutdown the auth server',
+          error: (error as any).message
         })
         process.exit(1)
       }

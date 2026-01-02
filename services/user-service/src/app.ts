@@ -78,7 +78,8 @@ export class App {
     } catch (error) {
       logger.error({
         from: 'app.ts',
-        message: 'user service failed to start server'
+        message: 'user service failed to start server',
+        error: (error as any).message
       })
       process.exit(1)
     }
@@ -112,7 +113,8 @@ export class App {
       } catch (error) {
         logger.error({
           from: 'app.ts',
-          message: 'failed to shutdown the user server'
+          message: 'failed to shutdown the user server',
+          error: (error as any).message
         })
         process.exit(1)
       }

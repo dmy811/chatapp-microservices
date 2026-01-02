@@ -57,7 +57,8 @@ export class App {
     } catch (error) {
       logger.error({
         from: 'app.ts',
-        message: 'gateway service failed to start server'
+        message: 'gateway service failed to start server',
+        error: (error as any).message
       })
       process.exit(1)
     }
@@ -78,11 +79,14 @@ export class App {
         }
 
         logger.info('gateway server shutdown gracefully')
+        process.exit(0)
       } catch (error) {
         logger.error({
           from: 'app.ts',
-          message: 'failed to shutdown the sgateway erver'
+          message: 'failed to shutdown the sgateway erver',
+          error: (error as any).message
         })
+        process.exit(1)
       }
     }
     signals.forEach((signal) => process.once(signal, shutdown))
