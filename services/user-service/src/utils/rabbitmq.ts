@@ -23,5 +23,21 @@ export const getRabbitChannel = async (): Promise<Channel> => {
     logger.error('RabbitMQ connection error', { error: (err as any).message })
   })
 
+  logger.info('RabbitMQ successfully connected and initialized')
   return channel
+}
+
+export const closeRabbit = async () => {
+  try {
+    if (channel) {
+      await channel.close()
+      channel = null
+    }
+    if (connection) {
+      await connection.close()
+      connection = null
+    }
+  } catch (error) {
+    logger.error('Error closing RabbitMQ connection/channel', { error: error })
+  }
 }

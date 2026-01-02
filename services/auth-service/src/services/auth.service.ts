@@ -4,7 +4,7 @@ import { LoginInput, RegisterInput, UserData } from '@/types/auth'
 import { BadRequestError, ConflictError } from '@chatapp/common'
 import { sequelize } from '@/db/sequelize'
 import { hashPassword } from '@/utils/token'
-import { publishUserRegistered } from '@/messaging/event-publishing'
+import { publishUserRegistered } from '@/messaging/events/auth-events.pubsliher'
 
 export class AuthService {
   constructor(private readonly model: typeof UserCredentials) {}
