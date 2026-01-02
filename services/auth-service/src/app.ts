@@ -7,10 +7,7 @@ import { logger } from './utils/logger'
 import { Env } from './config/env'
 import { createInternalAuthMiddleware } from '@chatapp/common'
 import { initModels } from './models'
-import {
-  closeRabbitAndPublisher,
-  connectToRabbitAndInitPublisher
-} from './messaging/event-publishing'
+import { closeRabbit, getRabbitChannel } from './utils/rabbitmq'
 
 export class App {
   private app: Application
@@ -58,7 +55,16 @@ export class App {
         res.status(200).json({ message: 'AUTH MYSQL DATABASE OK' })
       } catch (error) {
         logger.error(error)
-        res.status(500).json({ message: 'AUTH MYSQL DATABASE Uunhealthy' })
+        res.status(500).json({ message: 'AUTH MYSQL DATABASE Unhealthy' })
+      }
+    })
+
+    this.app.get('/health/rabbit', async (_, res) => {
+      try {
+        await getRabbitChannel()
+        res.status(200).json({ message: 'RABBITMQ OK' })
+      } catch (error) {
+        res.status(500).json({ message: 'RABBITMQ Unhealthy' })
       }
     })
   }
@@ -67,7 +73,6 @@ export class App {
     try {
       await connectToDatabase()
       await initModels() // development purposes
-      await connectToRabbitAndInitPublisher()
       this.server = this.app.listen(this.env.AUTH_SERVICE_PORT, () => {
         logger.info(
           `auth service is running on port ${this.env.AUTH_SERVICE_PORT}`
@@ -85,8 +90,15 @@ export class App {
 
   private setupGracefulShutdown(): void {
     const signals: NodeJS.Signals[] = ['SIGINT', 'SIGTERM', 'SIGQUIT']
+    const FORCE_EXIT_TIMEOUT = 10_000
+
     const shutdown = async (signal: NodeJS.Signals) => {
       logger.warn(`recievied ${signal}, shutting down...`)
+
+      const forceExit = setTimeout(() => {
+        logger.error('Force shutdown due to timeout')
+        process.exit(1)
+      }, FORCE_EXIT_TIMEOUT).unref()
       try {
         if (this.server) {
           await new Promise<void>((resolve, reject) => {
@@ -98,13 +110,16 @@ export class App {
         }
 
         await closeDatabase()
-        await closeRabbitAndPublisher()
+        await closeRabbit()
+        clearTimeout(forceExit)
         logger.info('auth server shutdown gracefully')
+        process.exit(0)
       } catch (error) {
         logger.error({
           from: 'app.ts',
           message: 'failed to shutdown the auth server'
         })
+        process.exit(1)
       }
     }
     signals.forEach((signal) => process.once(signal, shutdown))
@@ -114,7 +129,7 @@ export class App {
         message: 'recieved unhandled rejection',
         reason
       })
-      shutdown('unhandledRejection' as NodeJS.Signals)
+      shutdown('SIGTERM')
     })
     process.once('uncaughtException', (reason) => {
       logger.error({
@@ -122,7 +137,7 @@ export class App {
         message: 'recieved uncaught exception',
         reason
       })
-      shutdown('uncaughtException' as NodeJS.Signals)
+      shutdown('SIGTERM')
     })
   }
 }

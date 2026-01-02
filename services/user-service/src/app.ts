@@ -84,8 +84,15 @@ export class App {
 
   private setupGracefulShutdown(): void {
     const signals: NodeJS.Signals[] = ['SIGINT', 'SIGTERM', 'SIGQUIT']
+    const FORCE_EXIT_TIMEOUT = 10_000
+
     const shutdown = async (signal: NodeJS.Signals) => {
       logger.warn(`recievied ${signal}, shutting down...`)
+
+      const forceExit = setTimeout(() => {
+        logger.error('Force shutdown due to timeout')
+        process.exit(1)
+      }, FORCE_EXIT_TIMEOUT).unref()
       try {
         if (this.server) {
           await new Promise<void>((resolve, reject) => {
@@ -97,12 +104,15 @@ export class App {
         }
 
         await closeDatabase()
+        clearTimeout(forceExit)
         logger.info('user server shutdown gracefully')
+        process.exit(0)
       } catch (error) {
         logger.error({
           from: 'app.ts',
           message: 'failed to shutdown the user server'
         })
+        process.exit(1)
       }
     }
     signals.forEach((signal) => process.once(signal, shutdown))
@@ -112,7 +122,7 @@ export class App {
         message: 'recieved unhandled rejection',
         reason
       })
-      shutdown('unhandledRejection' as NodeJS.Signals)
+      shutdown('SIGTERM')
     })
     process.once('uncaughtException', (reason) => {
       logger.error({
@@ -120,7 +130,7 @@ export class App {
         message: 'recieved uncaught exception',
         reason
       })
-      shutdown('uncaughtException' as NodeJS.Signals)
+      shutdown('SIGTERM')
     })
   }
 }

@@ -92,7 +92,7 @@ export class App {
         message: 'recieved unhandled rejection',
         reason
       })
-      shutdown('unhandledRejection' as NodeJS.Signals)
+      shutdown('SIGTERM')
     })
     process.once('uncaughtException', (reason) => {
       logger.error({
@@ -100,7 +100,7 @@ export class App {
         message: 'recieved uncaught exception',
         reason
       })
-      shutdown('uncaughtException' as NodeJS.Signals)
+      shutdown('SIGTERM')
     })
   }
 }
