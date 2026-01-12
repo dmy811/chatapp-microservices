@@ -5,6 +5,7 @@ import { UserProxyService } from '@/services/user.proxy.service'
 import { UserController } from '@/controllers/user.controller'
 import { validateRequest } from '@chatapp/common'
 import { UserSchema } from '@/validations/user.schema'
+import { requireAuth } from '@/middlewares/require-auth'
 
 const userClient: AxiosInstance = axios.create({
   baseURL: env.USER_SERVICE_URL,
@@ -35,8 +36,12 @@ export class UserRoutes {
       this.userController.getAuthRabbitHealthHandler
     )
 
-    this.userRoutes.get('/', this.userController.getAllUsersHandler)
-    this.userRoutes.get('/search', this.userController.searchUsers)
+    this.userRoutes.get(
+      '/',
+      requireAuth,
+      this.userController.getAllUsersHandler
+    )
+    this.userRoutes.get('/search', requireAuth, this.userController.searchUsers)
     this.userRoutes.post(
       '/',
       validateRequest({ body: UserSchema.createUserSchema }),
@@ -44,6 +49,7 @@ export class UserRoutes {
     )
     this.userRoutes.get(
       '/:id',
+      requireAuth,
       validateRequest({ params: UserSchema.userIdParams }),
       this.userController.getUserByIdHandler
     )

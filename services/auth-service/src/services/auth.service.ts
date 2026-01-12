@@ -71,7 +71,7 @@ export class AuthService {
     const now = new Date()
     const refreshTokenExpires = new Date(now.setDate(now.getDate() + 7))
     const accessToken = signJwt(
-      { id: user.id },
+      { id: user.id, email: user.email },
       { expiresIn: env.JWT_ACCESS_TOKEN_EXPIRES_IN as any }
     )
     await this.refreshTokenModel.create({
