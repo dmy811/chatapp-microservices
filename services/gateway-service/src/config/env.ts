@@ -8,6 +8,7 @@ const envSchema = z.object({
     .default('development'),
   GATEWAY_PORT: z.coerce.number().int().min(0).max(65_536).default(4000),
   AUTH_SERVICE_URL: z.url(),
+  USER_SERVICE_URL: z.url(),
   INTERNAL_API_TOKEN: z.string().min(16)
 })
 

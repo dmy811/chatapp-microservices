@@ -11,38 +11,42 @@ const authClient: AxiosInstance = axios.create({
   timeout: 5000
 })
 
-export class Routes {
+export class AuthRoutes {
   private readonly authProxyService: AuthProxyService
   private readonly authController: AuthController
-  constructor(public readonly routes: Router) {
-    this.routes = Router()
+  public readonly authRoutes: Router
+  constructor() {
+    this.authRoutes = Router()
     this.authProxyService = new AuthProxyService(authClient)
     this.authController = new AuthController(this.authProxyService)
     this.initializeRoutes()
   }
   private initializeRoutes(): void {
-    this.routes.get('/health', this.authController.getAuthServiceHealthHandler)
-    this.routes.get(
+    this.authRoutes.get(
+      '/health',
+      this.authController.getAuthServiceHealthHandler
+    )
+    this.authRoutes.get(
       '/health/db',
       this.authController.getAuthDatabaseHealthHandler
     )
-    this.routes.get(
+    this.authRoutes.get(
       '/health/rabbit',
       this.authController.getAuthRabbitHealthHandler
     )
-    this.routes.post(
+    this.authRoutes.post(
       '/register',
       validateRequest({ body: AuthSchema.registerSchema }),
       this.authController.registerHandler
     )
 
-    this.routes.post(
+    this.authRoutes.post(
       '/login',
       validateRequest({ body: AuthSchema.loginSchema }),
       this.authController.loginHandler
     )
 
-    this.routes.post(
+    this.authRoutes.post(
       '/refresh',
       validateRequest({ body: AuthSchema.refreshSchema }),
       this.authController.refreshTokenHandler

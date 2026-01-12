@@ -1,14 +1,12 @@
-import express from 'express'
 import { App } from '@/app'
 import { env } from './config/env'
 import { logger } from './utils/logger'
-import { Routes } from './routes/auth.routes'
+import { AllRoutes } from './routes'
 
 const main = async () => {
   try {
-    const router = express.Router()
-    const userRoutes = new Routes(router)
-    const app = new App(env, userRoutes.routes)
+    const routes = new AllRoutes().getAllRoutes()
+    const app = new App(env, routes)
     await app.startServer()
   } catch (error) {
     logger.error({

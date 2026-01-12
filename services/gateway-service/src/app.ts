@@ -32,7 +32,7 @@ export class App {
   }
 
   private initializeRoutes(): void {
-    this.app.use('/auth', this.routes)
+    this.app.use('/api', this.routes)
   }
 
   private initializeErrorHandling(): void {
@@ -52,6 +52,7 @@ export class App {
           `gateway service is running on port ${this.env.GATEWAY_PORT}`
         )
         logger.info(`auth service is running at ${this.env.AUTH_SERVICE_URL}`)
+        logger.info(`user service is running at ${this.env.USER_SERVICE_URL}`)
       })
       this.setupGracefulShutdown()
     } catch (error) {

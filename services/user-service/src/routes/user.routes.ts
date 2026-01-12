@@ -25,11 +25,7 @@ export class Routes {
       this.userController.createUser
     )
     this.routes.get('/', this.userController.getAllUsers)
-    this.routes.get(
-      '/search',
-      validateRequest({ query: UserSchema.searchUsersQuerySchema.shape.query }),
-      this.userController.getAllUsers
-    )
+    this.routes.get('/search', this.userController.searchUsers)
     this.routes.get(
       '/:id',
       validateRequest({ params: UserSchema.userIdParams.shape.params }),

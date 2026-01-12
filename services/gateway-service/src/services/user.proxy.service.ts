@@ -5,39 +5,39 @@ import {
   InternalServerError,
   ServiceErrorRespose
 } from '@chatapp/common'
-import { LoginPayload, RegisterPayload } from '@/types/auth'
+import { CreateUserInput, SearchUsersQuery } from '@/validations/user.schema'
 
-export class AuthProxyService {
-  private readonly authHeader = {
+export class UserProxyService {
+  private readonly userHeader = {
     headers: {
       'x-internal-token': env.INTERNAL_API_TOKEN
     }
   }
-  constructor(private readonly authClient: AxiosInstance) {}
+  constructor(private readonly userClient: AxiosInstance) {}
 
-  async authServiceHealth() {
+  async userServiceHealth() {
     try {
-      const response = await this.authClient.get('/health', this.authHeader)
+      const response = await this.userClient.get('/health', this.userHeader)
       return response.data
     } catch (e) {
       return this.handleAxiosError(e)
     }
   }
 
-  async authDatabaseServicehealth() {
+  async userDatabaseServicehealth() {
     try {
-      const response = await this.authClient.get('/health/db', this.authHeader)
+      const response = await this.userClient.get('/health/db', this.userHeader)
       return response.data
     } catch (e) {
       return this.handleAxiosError(e)
     }
   }
 
-  async authRabbitServiceHealth() {
+  async userRabbitServiceHealth() {
     try {
-      const response = await this.authClient.get(
+      const response = await this.userClient.get(
         '/health/rabbit',
-        this.authHeader
+        this.userHeader
       )
       return response.data
     } catch (e) {
@@ -45,38 +45,51 @@ export class AuthProxyService {
     }
   }
 
-  async register(payload: RegisterPayload) {
+  async getUserById(id: string) {
     try {
-      const response = await this.authClient.post(
-        '/auth/register',
+      const response = await this.userClient.get(
+        `/users/${id}`,
+        this.userHeader
+      )
+      return response.data
+    } catch (e) {
+      return this.handleAxiosError(e)
+    }
+  }
+
+  async getAllUsers() {
+    try {
+      const response = await this.userClient.get('/users', this.userHeader)
+      return response.data
+    } catch (e) {
+      return this.handleAxiosError(e)
+    }
+  }
+
+  async searchUsers(query: SearchUsersQuery) {
+    try {
+      const response = await this.userClient.get('/users/search', {
+        headers: this.userHeader.headers,
+        params: {
+          query: query.query,
+          ...(query.limit ? { limit: query.limit } : {}),
+          ...(query.exclude && query.exclude.length > 0
+            ? { exclude: query.exclude }
+            : {})
+        }
+      })
+      return response.data
+    } catch (e) {
+      return this.handleAxiosError(e)
+    }
+  }
+
+  async createUser(payload: CreateUserInput) {
+    try {
+      const response = await this.userClient.post(
+        '/users',
         payload,
-        this.authHeader
-      )
-      return response.data
-    } catch (e) {
-      return this.handleAxiosError(e)
-    }
-  }
-
-  async login(payload: LoginPayload) {
-    try {
-      const response = await this.authClient.post(
-        '/auth/login',
-        payload,
-        this.authHeader
-      )
-      return response.data
-    } catch (e) {
-      return this.handleAxiosError(e)
-    }
-  }
-
-  async refreshToken(refreshToken: string) {
-    try {
-      const response = await this.authClient.post(
-        '/auth/refresh',
-        { refreshToken },
-        this.authHeader
+        this.userHeader
       )
       return response.data
     } catch (e) {
@@ -93,7 +106,7 @@ export class AuthProxyService {
     }
 
     return status >= 500
-      ? 'Authentication service is unavailable'
+      ? 'User service is unavailable'
       : 'An error occurred while processing the request'
   }
 
@@ -108,7 +121,7 @@ export class AuthProxyService {
 
   private handleAxiosError = (error: unknown): never => {
     if (!axios.isAxiosError(error) || !error.response) {
-      throw new InternalServerError('Authentication service is unavailable')
+      throw new InternalServerError('User service is unavailable')
     }
 
     const { status, data } = error.response as {
