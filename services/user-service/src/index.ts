@@ -2,7 +2,7 @@ import express from 'express'
 import { App } from '@/app'
 import { env } from './config/env'
 import { logger } from './utils/logger'
-import { Routes } from './routes/auth.routes'
+import { Routes } from './routes/user.routes'
 
 const main = async () => {
   try {

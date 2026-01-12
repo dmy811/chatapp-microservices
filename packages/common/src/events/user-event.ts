@@ -1,18 +1,19 @@
 import { EventPayload, OutBoundEvent } from './event-types'
 
-export const AUTH_EVENT_EXCHANGE = 'auth.events'
-export const AUTH_USER_REGISTERED_ROUTING_KEY = 'auth.registered'
+export const USER_EVENTS_EXCHANGE = 'user.events'
+export const USER_CREATED_ROUTING_KEY = 'user.created'
 
-export interface AuthUserRegisteredPayload extends EventPayload {
+export interface UserCreatedPayload extends EventPayload {
   id: string
   email: string
   displayName: string
   createdAt: string
+  updatedAt: string
 }
 
-export type AuthRegisteredEvent = OutBoundEvent<
-  typeof AUTH_USER_REGISTERED_ROUTING_KEY,
-  AuthUserRegisteredPayload
+export type UserCreatedEvent = OutBoundEvent<
+  typeof USER_CREATED_ROUTING_KEY,
+  UserCreatedPayload
 >
 
 // {
@@ -22,6 +23,7 @@ export type AuthRegisteredEvent = OutBoundEvent<
 //       email: string
 //       displayName: string
 //       createdAt: string
+//       updatedAt: string
 //   }
 //   occurredAt: string
 //   metadata: {

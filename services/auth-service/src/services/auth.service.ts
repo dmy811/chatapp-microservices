@@ -2,6 +2,7 @@ import { Op } from 'sequelize'
 import { RefreshTokens, UserCredentials } from '@/models'
 import { AuthToken, LoginInput, RegisterInput, UserData } from '@/types/auth'
 import {
+  AuthUserRegisteredPayload,
   BadRequestError,
   ConflictError,
   NotFoundError,
@@ -48,7 +49,7 @@ export class AuthService {
       createdAt: user.createdAt.toISOString()
     }
     // publish event UserRegistered
-    publishUserRegistered(userData)
+    publishUserRegistered(userData as AuthUserRegisteredPayload)
     return userData as UserData
   }
 
